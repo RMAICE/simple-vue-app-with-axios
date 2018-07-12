@@ -1,0 +1,153 @@
+template#nav-component
+	nav.header__nav
+		router-link.header__link(
+			v-for="link of links"
+			:to="link.path"
+			:key="link.name"
+			:class="{ '_active': link.name === globalService.currPage.name }"
+		) [[ link.text ]]
+
+template#message-component
+	.message(
+		v-bind:class="{'_active': globalService.message.active}"
+	) [[ globalService.message.message ]]
+
+template#menu-component
+	.header__menu
+		button.header__burger(type="button")
+			<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+				<path fill-rule="evenodd" clip-rule="evenodd" d="M0 12H18V10H0V12ZM0 7H18V5H0V7ZM0 0V2H18V0H0Z" transform="translate(3 6)"/>
+			</svg>
+		span.header__page-title [[ globalService.currPage.text ]]
+		span.header__user-name [[ globalService.user.nickName ]]
+
+template#auth-page
+	.profile
+		.auth.container(
+			v-if="!globalService.user.authorized"
+		)
+			.auth__title Здесь можно войти
+			.auth__input
+				input(type="email", name="", placeholder="Почта"
+					v-model="email"
+				)
+			.auth__input
+				input(type="password", name="", placeholder="Пароль"
+					v-model="password"
+				)
+			button.auth__button(
+				type="button"
+				@click="globalService.methods.logIn(email, password)"
+			) войти
+		.auth.container(
+			v-if="globalService.user.authorized"
+		)
+			.auth__title Здесь можно сменить ник
+			.auth__input
+				input(type="text", name="", placeholder="Вводи ник"
+					v-model="nickname"
+				)
+			button.auth__button(
+				type="button"
+				@click="changeNickName(nickname)"
+			) Сменить ник
+			.auth__title Здесь можно загрузить пикчу
+			label.auth__input._file
+				input(type="file", ref="file",
+					@change="loadFile"
+				)
+				<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path fill-rule="evenodd" clip-rule="evenodd" d="M14 6H8V0H6V6H0V8H6V14H8V8H14V6Z" fill="white"/>
+				</svg>
+			button.auth__button(
+				type="button"
+				@click="changeAvatar"
+			) Сменить пикчу
+			.auth__title Здесь можно выйти
+			button.auth__button(
+				type="button"
+				@click="logOut"
+			) выйти
+
+template#reg-page
+	.auth.container(
+		v-if="!globalService.user.authorized"
+	)
+		.auth__title Здесь можно зарегаться
+		.auth__input
+			input(type="email", name="", placeholder="Почта"
+				v-model="email"
+			)
+		.auth__input
+			input(type="password", name="", placeholder="Пароль"
+				v-model="password"
+			)
+		.auth__input
+			input(type="password", name="", placeholder="Подтверждение Пароля"
+				v-model="confirmPassword"
+			)
+		button.auth__button(
+			type="button"
+			@click="globalService.methods.signUp(email, password, confirmPassword)"
+		) войти
+
+template#posts-page
+	.wrapper.container
+		.posts(
+			v-if="globalService.user.authorized"
+		)
+			.auth__input
+				input(type="text", name="", placeholder="Название поста"
+					v-model="postTitle"
+				)
+			.auth__input
+				input(type="text", name="", placeholder="Текст поста"
+					v-model="postMessage"
+				)
+			button.auth__button(
+				type="button"
+				@click="createPost( postTitle, postMessage )"
+			) создать пост
+			.posts__list(
+				v-if="postArr.length > 0"
+			)
+				router-link.posts__item(
+					v-for="item of postArr"
+					ref="posts"
+					:to="/article/ + item._id"
+					:key="item._id"
+				)
+					.posts__item-title [[ item.title ]]
+					.posts__item-description [[ item.description ]]
+
+template#article-page
+	.wrapper.container
+		.posts__item-title [[ article.title ]]
+			.posts__delete-btn(title="Удалить пост"
+				@click="deletePost( article._id )"
+			)
+				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path opacity="0.54" fill-rule="evenodd" clip-rule="evenodd" d="M14 1.4L12.6 0L7 5.6L1.4 0L0 1.4L5.6 7L0 12.6L1.4 14L7 8.4L12.6 14L14 12.6L8.4 7L14 1.4Z" transform="translate(5 5)" fill="black"/>
+				</svg>
+		.posts__item-description [[ article.description ]]
+		.posts__comment-list(
+			v-if="comments"
+		)
+			.posts__comment-item(
+				v-for="item of article.comments"
+			)
+				.posts__delete-btn._left-pos(title="Удалить коментарий"
+					@click="deleteComment( item._id )"
+				)
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path opacity="0.54" fill-rule="evenodd" clip-rule="evenodd" d="M14 1.4L12.6 0L7 5.6L1.4 0L0 1.4L5.6 7L0 12.6L1.4 14L7 8.4L12.6 14L14 12.6L8.4 7L14 1.4Z" transform="translate(5 5)" fill="black"/>
+					</svg>
+				.posts__comment-text [[ item.message ]]
+		.post__comment-menu
+			.auth__input
+				input(type="text", name="", placeholder="твой комент"
+					v-model="commentMessage"
+				)
+			button.auth__button(type="button"
+				@click="addComment( commentMessage )"
+			) добавить коментарий
